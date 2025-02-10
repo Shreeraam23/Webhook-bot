@@ -1,3 +1,9 @@
 python-telegram-bot==13.7
 gtts==2.3.1
 langdetect==1.0.9
+telebot
+aiohttp
+requests
+aiohttp
+Flask
+gunicorn
