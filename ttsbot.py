@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 # Bot configuration
 TOKEN = "7610408338:AAHhSDWn0bz9IR5BGWlB8H_u7MUPH5963sg"
-ADMIN_IDS = []  # Add admin user IDs here
+ADMIN_IDS = [7369976226]  # Add admin user IDs here
 BANNED_USERS = set()
 QUIZ_SCORES = {}
 
