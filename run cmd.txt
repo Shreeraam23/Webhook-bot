@@ -1,1 +1,1 @@
-pip install python-telegram-bot
+web: python your_bot_file.py
