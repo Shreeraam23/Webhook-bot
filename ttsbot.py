@@ -80,7 +80,7 @@ def handle_text(update: Update, context: CallbackContext) -> None:
         update.message.reply_text("❌ Error processing your request. Please try again.")
 
 def main() -> None:
-    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    TOKEN = os.getenv("7610408338:AAHhSDWn0bz9IR5BGWlB8H_u7MUPH5963sg")
     if not TOKEN:
         raise ValueError("Missing TELEGRAM_BOT_TOKEN environment variable")
 
