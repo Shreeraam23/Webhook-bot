@@ -1,1 +1,1 @@
-gunicorn app:app & python3 main.py
+web: python your_bot_file.py
