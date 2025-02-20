@@ -7,6 +7,6 @@ requests
 aiohttp
 Flask
 gunicorn
-BeautifulSoupbs4
+beautifulsoup4
 bs4
 telegram
