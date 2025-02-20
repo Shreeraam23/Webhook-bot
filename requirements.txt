@@ -10,3 +10,4 @@ gunicorn
 beautifulsoup4
 bs4
 telegram
+imghdr
