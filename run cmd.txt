@@ -1,1 +1,1 @@
-gunicorn your_app_file:app
+gunicorn app:app & python3 main.py
