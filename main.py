@@ -1,126 +1,179 @@
-from telethon import TelegramClient, events
-import base64
-import logging
-from datetime import datetime
+from flask import Flask
+from threading import Thread
+import telebot
+import requests
+import json
+import os
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
+app = Flask(__name__)
+bot = telebot.TeleBot('8177256403:AAEOUctn6EhgLjPZQAz7SbprsNPS5uwToUI')
+admin = "7576455886"
 
-API_ID = 20373203
-API_HASH = "8962717c7c708e210f66ea658db58d85"
-BOT_TOKEN = "7531731133:AAF876StbZbRQxmP9T-H_Yhdy0kXf9tRjAQ" #Enter Your Token
-ADMIN_ID = 7369976226 # Replace With Your Id
-DB_CHANNEL = -1002380048510 #Replace With Your Channel Id
-XOR_KEY = 50 # Don't Use Higher Than 99 
+# MADE BY NEP CODER @DEVSNP
+def file_exists(file_path):
+    return os.path.exists(file_path)
 
-CREATOR = "@myserver23"
-START_TIME = datetime.now()
+# MADE BY NEP CODER @DEVSNP
+    if not os.path.exists("admin"):
+      os.makedirs("admin")
 
-bot = TelegramClient('file_store_bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
+# MADE BY NEP CODER @DEVSNP
+    total_file = "admin/mail.txt"
+    if not os.path.exists(total_file):
+      with open(total_file, 'w') as f:
+          f.write("0")
 
-user_states = {}
 
-def xor(message: str, key: int) -> str:
-    return ''.join(chr(ord(m) ^ key) for m in message)
 
-@bot.on(events.NewMessage(pattern='^/start( .+)?$'))
-async def start_handler(event):
-    try:
-        command = event.message.text.split()
-        if len(command) > 1:
-            encoded_data = command[1]
-            try:
-                decoded_bytes = base64.b64decode(encoded_data.encode('utf-8'))
-                decrypted_data = xor(decoded_bytes.decode('utf-8'), XOR_KEY)
-                logger.info(f"Decrypted data: {decrypted_data}")
-                try:
-                    message_id = int(decrypted_data)
-                    message = await bot.get_messages(DB_CHANNEL, ids=message_id)
-                    if message:
-                        await bot.forward_messages(event.chat_id, message, silent=True)
-                    else:
-                        await event.respond("Sorry, this message is no longer available.")
-                except ValueError:
-                    await event.respond("Invalid link format.")
-            except Exception as e:
-                logger.error(f"Error processing link: {e}")
-                await event.respond("Sorry, this link appears to be invalid or expired.")
+
+if not os.path.exists("admin"):
+    os.makedirs("admin")
+
+# MADE BY NEP CODER @DEVSNP
+total_file = "admin/total.txt"
+if not os.path.exists(total_file):
+    with open(total_file, 'w') as f:
+        f.write("0")
+
+total_file = "admin/mail.txt"
+if not os.path.exists(total_file):
+    with open(total_file, 'w') as f:
+        f.write("0")
+
+# MADE BY NEP CODER @DEVSNP
+total_file = "admin/total.txt"
+if not os.path.exists(total_file):
+    with open(total_file, 'w') as f:
+        f.write("0")
+
+
+# MADE BY NEP CODER @DEVSNP
+@bot.message_handler(commands=['start'])
+def handle_start(message):
+    user_id = message.from_user.id
+    fname = message.from_user.first_name
+    lname = message.from_user.last_name
+    ulogin = message.from_user.username
+# MADE BY NEP CODER @DEVSNP
+    users_directory = "admin/users/"
+    if not os.path.exists(users_directory):
+        os.makedirs(users_directory)
+
+    if not file_exists(f"{users_directory}{user_id}.json"):
+        bot.send_message(admin, f"<b>🚀 New User Joined The Bot\n\nUser Id : {user_id}\n\nFirst Name: {fname}\n\nLast name: {lname}</b>")
+        open(f"{users_directory}{user_id}.json", "w").close()
+# MADE BY NEP CODER @DEVSNP
+    mess = f"<b>😀 Hey {fname} Welcome To the @{bot.get_me().username}\n\nBot Created By : @myserver23</b>"
+    keyboard_markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+    keyboard_markup.row("🚀 My Email")
+    keyboard_markup.row("📧 Generate New Email", "📨 Inbox")
+    keyboard_markup.row("📊  Status")
+    bot.send_message(user_id, mess, reply_markup=keyboard_markup, parse_mode='HTML')
+
+
+
+# MADE BY NEP CODER @DEVSNP
+@bot.message_handler(func=lambda message: message.text == '📧 Generate New Email')
+def generate_email(message):
+    user_id = message.from_user.id
+
+    url = "https://api.internal.temp-mail.io/api/v3/email/new"
+    headers = {"Content-Type": "application/json"}
+    data = {"min_name_length": 10, "max_name_length": 10}
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    if response.status_code == 200:
+        email = response.json()['email']
+        bot.send_message(user_id, f"<b>Your Email Successfully Generated\n{email}</b>", parse_mode='HTML')
+        with open(f"admin/mail{user_id}.json", "w") as mail_file:
+            mail_file.write(json.dumps({"email": email}))
+        h = int(open("admin/mail.txt").read()) + 1
+        with open("admin/mail.txt", "w") as mail_count_file:
+            mail_count_file.write(str(h))
+    else:
+        bot.send_message(user_id, "<b>Error occurred while generating email</b>", parse_mode='HTML')
+# MADE BY NEP CODER @DEVSNP
+@bot.message_handler(func=lambda message: message.text == '🚀 My Email')
+def get_user_email(message):
+    user_id = message.from_user.id
+
+    file_path = f"admin/mail{user_id}.json"
+    if file_exists(file_path):
+        email = json.load(open(file_path))['email']
+        bot.send_message(user_id, f"<b>Your Email Is\n\n{email}</b>", parse_mode='HTML')
+    else:
+        bot.send_message(user_id, "<b>❌️ No Email created</b>", parse_mode='HTML')
+
+@bot.message_handler(func=lambda message: message.text == '📨 Inbox')
+def check_inbox(message):
+    user_id = message.from_user.id
+
+    file_path = f"admin/mail{user_id}.json"
+    if file_exists(file_path):
+        email = json.load(open(file_path))['email']
+        response = requests.get(f"https://api.internal.temp-mail.io/api/v3/email/{email}/messages")
+        if len(response.text) < 8:
+            bot.send_message(user_id, "❌️ No Mail Received")
         else:
-            welcome_text = (
-                "👋 **Welcome to Message Store Bot!**\n\n"
-                "This bot helps you store and share messages securely.\n"
-                "Use /gen to generate a new message link (Admin only).\n"
-                "Use /status to check bot status."
-            )
-            await event.respond(welcome_text, parse_mode='markdown')
-    except Exception as e:
-        logger.error(f"Error in start handler: {e}")
-        await event.respond("An error occurred. Please try again later.")
+            emails = json.loads(response.text)
+            for data in emails:
+                msg = f"<b>Mail Received\n\nId: {data['id']}\n\nSubject: {data['subject']}\n\nText: {data['body_text']}</b>"
+                bot.send_message(user_id, msg, parse_mode='HTML')
+    else:
+        bot.send_message(user_id, "<b>⛔️ Please Generate an email first</b>", parse_mode='HTML')
 
-@bot.on(events.NewMessage(pattern='/gen'))
-async def gen_handler(event):
-    try:
-        if event.sender_id != ADMIN_ID:
-            await event.respond("Sorry, only admin can use this command.")
-            return
-        user_states[event.sender_id] = True
-        await event.respond("📝 Send any message to generate its link.")
-    except Exception as e:
-        logger.error(f"Error in gen handler: {e}")
-        await event.respond("An error occurred. Please try again later.")
+@bot.message_handler(func=lambda message: message.text == '📊  Status')
+def bot_status(message):
+    user_id = message.from_user.id
 
-@bot.on(events.NewMessage)
-async def message_handler(event):
-    try:
-        if event.message.text and event.message.text.startswith('/'):
-            return
-        if event.sender_id != ADMIN_ID or event.sender_id not in user_states:
-            return
-        del user_states[event.sender_id]
-        forwarded_msg = await bot.forward_messages(DB_CHANNEL, event.message, silent=True)
-        message_id = str(forwarded_msg.id)
-        logger.info(f"Generated message ID: {message_id}")
-        encrypted_data = xor(message_id, XOR_KEY)
-        encoded_data = base64.b64encode(encrypted_data.encode('utf-8')).decode('utf-8')
-        bot_username = (await bot.get_me()).username
-        bot_link = f"https://t.me/{bot_username}?start={encoded_data}"
-        logger.info(f"Bot link: {bot_link}")
-        response_text = (
-            "✅ **Message Stored!**\n\n"
-            f"🔒 **Bot Link:**\n`{bot_link}`"
-        )
-        await event.respond(response_text, parse_mode='markdown')
-    except Exception as e:
-        logger.error(f"Error in message handler: {e}")
-        await event.respond("An error occurred while processing your message.")
-        if event.sender_id in user_states:
-            del user_states[event.sender_id]
+    tmail = int(open("admin/mail.txt").read())
+    usr = int(open("admin/total.txt").read())
+    img_url = "https://quickchart.io/chart?bkg=white&c={'type':'bar','data':{'labels':[''],'datasets':[{'label':'Total-Users','data':[" + str(usr) + "]},{'label':'Total-Mail Created','data':[" + str(tmail) + "]}]}}"
 
-@bot.on(events.NewMessage(pattern='/status'))
-async def status_handler(event):
-    if event.sender_id != ADMIN_ID:
-        return
-    current_time = datetime.now()
-    uptime = current_time - START_TIME
-    status_text = (
-        "🤖 **Bot Status**\n\n"
-        f"👤 Owner: {CREATOR}\n"
-        f"⏰ Start Time: {START_TIME.strftime('%Y-%m-%d %H:%M:%S')} UTC\n"
-        f"🕒 Current Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC\n"
-        f"⌛️ Uptime: {str(uptime).split('.')[0]}\n"
-        "✅ Bot is running normally"
-    )
-    await event.respond(status_text, parse_mode='markdown')
+    caption = f"📊 Bot Live Stats 📊\n\n⚙ Total Email Generated : {tmail}\n✅️ Total Users : {usr}\n\n🔥 By: @myserver23"
+    bot.send_photo(user_id, img_url, caption=caption)
 
-def main():
-    try:
-        print("🤖 Message Store Bot")
-        print(f"👤 Owner: {CREATOR}")
-        print(f"⏰ Time: {START_TIME.strftime('%Y-%m-%d %H:%M:%S')} UTC")
-        logger.info("Bot started successfully!")
-        bot.run_until_disconnected()
-    except Exception as e:
-        logger.error(f"Error running bot: {e}")
+# MADE BY NEP CODER @DEVSNP
+@bot.message_handler(commands=['broadcast'])
+def broadcast_command(message):
 
-if __name__ == '__main__':
-    main()
+    if str(message.from_user.id) == admin:
+        bot.send_message(message.chat.id, "Send the message you want to broadcast to all users. ✨")
+        bot.register_next_step_handler(message, send_broadcast)
+    else:
+        bot.send_message(message.chat.id, "You are not authorized to use this command. ⛔️")
+
+# MADE BY NEP CODER @DEVSNP
+def send_broadcast(message):
+    broadcast_text = message.text
+    users_directory = "admin/users/"
+    user_ids = [file.split('.')[0] for file in os.listdir(users_directory)]
+
+
+    for user_id in user_ids:
+        try:
+            bot.send_message(user_id, broadcast_text)
+        except Exception as e:
+            print(f"Failed to send message to user {user_id}: {e}")
+
+    bot.send_message(admin, "Broadcast sent to all users! 📣")
+
+
+
+
+@app.route('/')
+def index():
+    return "Alive"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+
+keep_alive()
+
+# MADE BY NEP CODER @DEVSNP
+bot.polling()
