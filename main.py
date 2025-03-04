@@ -1,40 +1,65 @@
 import telebot
-from telebot import types
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
-import time
 
-API_TOKEN = '8030295751:AAEESqaMYEkRjJizCc9195ulkuQCi74dCTA'
-bot = telebot.TeleBot(API_TOKEN)
-  #made by @DEVSNP
-@bot.message_handler(commands=['start'])
-def start(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text=' Generate Random meme', callback_data='generate_random_meme'))
+# MADE BY NEPCODER @DEVSNP
+bot = telebot.TeleBot('7455544866:AAGiKHtoTnx5OurEwdF33bO-ozqXV6W3cdQ')
 
-    api_response = requests.get("https://nepcoder.apinepdev.workers.dev/random-meme").json()
-    img_url = api_response['url']
-  #made by @DEVSNP
-    caption_text = "🧑‍💻Developer: @myserver23(my server)"
-    bot.send_photo(chat_id='@MYSERVER23', photo=img_url, caption=caption_text, reply_markup=markup)
+# MADE BY NEPCODER @DEVSNP
+required_channel = "@myserver23"
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_query(call):
-    if call.data == 'generate_random_meme':
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton(text=' Generate Random meme', callback_data='generate_random_meme'))
-  #made by @DEVSNP
-        api_response = requests.get("https://nepcoder.apinepdev.workers.dev/random-meme").json()
-        img_url = api_response['url']
-  #made by @DEVSNP
-        media = types.InputMediaPhoto(media=img_url)
-        caption_text = "🧑‍💻 Developer: @MYSERVER23(my server)"
-        
-        time.sleep(1)  #made by @DEVSNP
-  #made by @DEVSNP
+# MADE BY NEPCODER @DEVSNP
+movie_api_url = 'https://moviedetails.apinepdev.workers.dev/'
+
+@bot.message_handler(commands=['start', 'help'])
+def send_welcome(message):
+    user_id = message.from_user.id
+    is_member = check_membership(user_id)
+
+    if is_member:
+        bot.reply_to(message, "🎬 Welcome to the Movie Poster Bot! Send /movie <movie_name> to get movie details and posters. 📽️")
+    else:
+        join_button = InlineKeyboardButton("Join Channel 📢", url=f"https://t.me/myserver23")
+        markup = InlineKeyboardMarkup().add(join_button)
+        bot.send_message(message.chat.id, "🚫 To access the bot's features, please join our channel. Click the button below to join. 🚫", reply_markup=markup)
+
+@bot.message_handler(commands=['movie'])
+def get_movie_details(message):
+    user_id = message.from_user.id
+    is_member = check_membership(user_id)
+
+    if is_member:
         try:
-            bot.edit_message_media(chat_id=call.message.chat.id, media=media, message_id=call.message.message_id, reply_markup=markup)
-            bot.edit_message_caption(chat_id=call.message.chat.id, caption=caption_text, message_id=call.message.message_id, reply_markup=markup)
-        except telebot.apihelper.ApiTelegramException as e:
-            print(f"Telegram API Error: {e}")
+            movie_name = message.text.replace('/movie', '').strip()
+
+  # MADE BY NEPCODER @DEVSNP
+            response = requests.get(movie_api_url, params={'moviename': movie_name})
+
+            if response.status_code == 200:
+                movie_data = response.json()
+
+      # MADE BY NEPCODER @DEVSNP
+                poster_url = movie_data['Poster']
+                if poster_url != 'N/A':
+                    details_message = f"<b>📽️ Movie: {movie_name}</b>\n\n"
+                    for key, value in movie_data.items():
+                        if key != 'Poster':
+                            details_message += f"<b>{key}:</b> {value}\n"
+                    bot.send_photo(message.chat.id, poster_url, caption=details_message, parse_mode='HTML')
+                else:
+                    bot.reply_to(message, "❌ No poster available for this movie. ❌")
+            else:
+                bot.reply_to(message, "❌ Movie not found. Please check the movie name and try again. ❌")
+        except Exception as e:
+            bot.reply_to(message, "⚠️ An error occurred while fetching movie details. Please try again later. ⚠️")
+    else:
+        bot.reply_to(message, "🚫 You need to join our channel to access this command. Click the 'Join Channel' button to join. 🚫")
+
+def check_membership(user_id):
+    try:
+        chat_member = bot.get_chat_member(chat_id=required_channel, user_id=user_id)
+        return chat_member.status in ["member", "administrator", "creator"]
+    except Exception as e:
+        return False
 
 bot.polling()
