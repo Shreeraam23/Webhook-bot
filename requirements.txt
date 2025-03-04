@@ -9,3 +9,4 @@ Flask
 gunicorn
 beautifulsoup4
 pillow
+telethon
