@@ -1,11 +1,17 @@
-FROM python:3.10-slim
+# Use the official Python image as the base image
+FROM python:3.9-slim-buster
 
-WORKDIR /app
+# Set the working directory
+WORKDIR /usr/src/app
 
-COPY requirements.txt .
+# Copy the requirements file into the container
+COPY requirements.txt ./
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Install the required dependencies
+RUN pip install -r requirements.txt
 
+# Copy the rest of the application code into the container
 COPY . .
 
-CMD ["python", "-u", "ttsbot.py"]
+# Run the application
+CMD ["python", "main.py"]
