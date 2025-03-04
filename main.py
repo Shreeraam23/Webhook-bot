@@ -3,7 +3,7 @@ from telebot import types
 import requests
 import time
 
-API_TOKEN = '8177256403:AAEOUctn6EhgLjPZQAz7SbprsNPS5uwToUI'
+API_TOKEN = '8030295751:AAEESqaMYEkRjJizCc9195ulkuQCi74dCTA'
 bot = telebot.TeleBot(API_TOKEN)
   #made by @DEVSNP
 @bot.message_handler(commands=['start'])
