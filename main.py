@@ -3,7 +3,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
 
 # MADE BY NEPCODER @DEVSNP
-bot = telebot.TeleBot('7455544866:AAGiKHtoTnx5OurEwdF33bO-ozqXV6W3cdQ')
+bot = telebot.TeleBot('7654906615:AAEci2Wwgslrln2FdYlaffzT_HMRJ4MsU0k')
 
 # MADE BY NEPCODER @DEVSNP
 required_channel = "@myserver23"
