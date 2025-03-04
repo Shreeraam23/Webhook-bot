@@ -1,179 +1,357 @@
-from flask import Flask
-from threading import Thread
 import telebot
-import requests
-import json
-import os
+from telebot import types
+import re
+import time
 
-app = Flask(__name__)
-bot = telebot.TeleBot('8177256403:AAEOUctn6EhgLjPZQAz7SbprsNPS5uwToUI')
-admin = "7576455886"
+token = "7455544866:AAGiKHtoTnx5OurEwdF33bO-ozqXV6W3cdQ"
 
-# MADE BY NEP CODER @DEVSNP
-def file_exists(file_path):
-    return os.path.exists(file_path)
+bot = telebot.TeleBot(token)
 
-# MADE BY NEP CODER @DEVSNP
-    if not os.path.exists("admin"):
-      os.makedirs("admin")
-
-# MADE BY NEP CODER @DEVSNP
-    total_file = "admin/mail.txt"
-    if not os.path.exists(total_file):
-      with open(total_file, 'w') as f:
-          f.write("0")
-
-
-
-
-if not os.path.exists("admin"):
-    os.makedirs("admin")
-
-# MADE BY NEP CODER @DEVSNP
-total_file = "admin/total.txt"
-if not os.path.exists(total_file):
-    with open(total_file, 'w') as f:
-        f.write("0")
-
-total_file = "admin/mail.txt"
-if not os.path.exists(total_file):
-    with open(total_file, 'w') as f:
-        f.write("0")
-
-# MADE BY NEP CODER @DEVSNP
-total_file = "admin/total.txt"
-if not os.path.exists(total_file):
-    with open(total_file, 'w') as f:
-        f.write("0")
-
-
-# MADE BY NEP CODER @DEVSNP
 @bot.message_handler(commands=['start'])
-def handle_start(message):
-    user_id = message.from_user.id
-    fname = message.from_user.first_name
-    lname = message.from_user.last_name
-    ulogin = message.from_user.username
-# MADE BY NEP CODER @DEVSNP
-    users_directory = "admin/users/"
-    if not os.path.exists(users_directory):
-        os.makedirs(users_directory)
+def start(message):
+    owner = types.InlineKeyboardButton("👨‍💻 Owner", url="tg://settings/mera_dost")
+    channel = types.InlineKeyboardButton("📣 Channel", url="https://t.me/myserver23")
+    chat = types.InlineKeyboardButton("👥 Chat", url="https://t.me/Pre_contact_bot")
+    addme = types.InlineKeyboardButton("➕ Add Me To Your Group ➕", url="https://t.me/All_in_one_kaku_bot?startgroup=start")
+    commands = types.InlineKeyboardButton("📝 Commands", callback_data="commands")
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(addme)
+    markup.add(channel, chat)
+    markup.add(owner, commands)
+    
+    bot.send_message(message.chat.id, """*🫶 Welcome To Help Bot!
 
-    if not file_exists(f"{users_directory}{user_id}.json"):
-        bot.send_message(admin, f"<b>🚀 New User Joined The Bot\n\nUser Id : {user_id}\n\nFirst Name: {fname}\n\nLast name: {lname}</b>")
-        open(f"{users_directory}{user_id}.json", "w").close()
-# MADE BY NEP CODER @DEVSNP
-    mess = f"<b>😀 Hey {fname} Welcome To the @{bot.get_me().username}\n\nBot Created By : @myserver23</b>"
-    keyboard_markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-    keyboard_markup.row("🚀 My Email")
-    keyboard_markup.row("📧 Generate New Email", "📨 Inbox")
-    keyboard_markup.row("📊  Status")
-    bot.send_message(user_id, mess, reply_markup=keyboard_markup, parse_mode='HTML')
+🤖 My Names my server.
 
+👨‍💻 My Developer* [my friend](tg://settings/mera_dost)
 
+*🤖 Version* `1.0.1`""", parse_mode="Markdown", reply_markup=markup)
 
-# MADE BY NEP CODER @DEVSNP
-@bot.message_handler(func=lambda message: message.text == '📧 Generate New Email')
-def generate_email(message):
-    user_id = message.from_user.id
+@bot.callback_query_handler(func=lambda call: call.data == "commands")
+def commands_callback(call):
+    commands = types.InlineKeyboardButton("🔙 Back", callback_data="back_menu")
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(commands)
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="""
+*Bot Commands
 
-    url = "https://api.internal.temp-mail.io/api/v3/email/new"
-    headers = {"Content-Type": "application/json"}
-    data = {"min_name_length": 10, "max_name_length": 10}
+👮🏻  /ban lets you ban a user from the group without giving him the possibility to join again using the link of the group
 
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    if response.status_code == 200:
-        email = response.json()['email']
-        bot.send_message(user_id, f"<b>Your Email Successfully Generated\n{email}</b>", parse_mode='HTML')
-        with open(f"admin/mail{user_id}.json", "w") as mail_file:
-            mail_file.write(json.dumps({"email": email}))
-        h = int(open("admin/mail.txt").read()) + 1
-        with open("admin/mail.txt", "w") as mail_count_file:
-            mail_count_file.write(str(h))
-    else:
-        bot.send_message(user_id, "<b>Error occurred while generating email</b>", parse_mode='HTML')
-# MADE BY NEP CODER @DEVSNP
-@bot.message_handler(func=lambda message: message.text == '🚀 My Email')
-def get_user_email(message):
-    user_id = message.from_user.id
+👮🏻  /unban lets you remove a user from group's blacklist, giving them the possibility to join again with the link of the group
 
-    file_path = f"admin/mail{user_id}.json"
-    if file_exists(file_path):
-        email = json.load(open(file_path))['email']
-        bot.send_message(user_id, f"<b>Your Email Is\n\n{email}</b>", parse_mode='HTML')
-    else:
-        bot.send_message(user_id, "<b>❌️ No Email created</b>", parse_mode='HTML')
+👮🏻  /mute puts a user in read-only mode. He can read but he can't send any messages
 
-@bot.message_handler(func=lambda message: message.text == '📨 Inbox')
-def check_inbox(message):
-    user_id = message.from_user.id
+👮🏻 /unmute removes a user from read-only mode
 
-    file_path = f"admin/mail{user_id}.json"
-    if file_exists(file_path):
-        email = json.load(open(file_path))['email']
-        response = requests.get(f"https://api.internal.temp-mail.io/api/v3/email/{email}/messages")
-        if len(response.text) < 8:
-            bot.send_message(user_id, "❌️ No Mail Received")
-        else:
-            emails = json.loads(response.text)
-            for data in emails:
-                msg = f"<b>Mail Received\n\nId: {data['id']}\n\nSubject: {data['subject']}\n\nText: {data['body_text']}</b>"
-                bot.send_message(user_id, msg, parse_mode='HTML')
-    else:
-        bot.send_message(user_id, "<b>⛔️ Please Generate an email first</b>", parse_mode='HTML')
+👮🏻  /kick bans a user from the group, giving him the possibility to join again with the link of the group
 
-@bot.message_handler(func=lambda message: message.text == '📊  Status')
-def bot_status(message):
-    user_id = message.from_user.id
+👮🏻  /info gives information about a user*
+""", parse_mode="Markdown", reply_markup=markup)
 
-    tmail = int(open("admin/mail.txt").read())
-    usr = int(open("admin/total.txt").read())
-    img_url = "https://quickchart.io/chart?bkg=white&c={'type':'bar','data':{'labels':[''],'datasets':[{'label':'Total-Users','data':[" + str(usr) + "]},{'label':'Total-Mail Created','data':[" + str(tmail) + "]}]}}"
+@bot.callback_query_handler(func=lambda call: call.data == "back_menu")
+def back_menu_callback(call):
+  owner = types.InlineKeyboardButton("👨‍💻 Owner", url="tg://settings/mera_dost")
+  channel = types.InlineKeyboardButton("📣 Channel", url="https://t.me/myserver23")
+  chat = types.InlineKeyboardButton("👥 Chat", url="https://t.me/Pre_contact_bot")
+  commands = types.InlineKeyboardButton("📝 Commands", callback_data="commands")
+  markup = types.InlineKeyboardMarkup(row_width=2)
+  markup.add(owner)
+  markup.add(channel, chat)
+  markup.add(commands)
 
-    caption = f"📊 Bot Live Stats 📊\n\n⚙ Total Email Generated : {tmail}\n✅️ Total Users : {usr}\n\n🔥 By: @myserver23"
-    bot.send_photo(user_id, img_url, caption=caption)
+  bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="""*🫶 Welcome To Help Bot!
 
-# MADE BY NEP CODER @DEVSNP
-@bot.message_handler(commands=['broadcast'])
-def broadcast_command(message):
+  🤖 My Names - my server.
 
-    if str(message.from_user.id) == admin:
-        bot.send_message(message.chat.id, "Send the message you want to broadcast to all users. ✨")
-        bot.register_next_step_handler(message, send_broadcast)
-    else:
-        bot.send_message(message.chat.id, "You are not authorized to use this command. ⛔️")
+  👨‍💻 My Developer* [my friend](tg://settings/mera_dost)
 
-# MADE BY NEP CODER @DEVSNP
-def send_broadcast(message):
-    broadcast_text = message.text
-    users_directory = "admin/users/"
-    user_ids = [file.split('.')[0] for file in os.listdir(users_directory)]
+  *🤖 Version* `1.0.1`""", parse_mode="Markdown", reply_markup=markup)
 
 
-    for user_id in user_ids:
-        try:
-            bot.send_message(user_id, broadcast_text)
+@bot.message_handler(content_types=['new_chat_members'])
+def welcome_new_members(message):
+    for user in message.new_chat_members:
+        user_link = f'<a href="tg://user?id={user.id}">{user.first_name}</a>'
+        welcome_message = f"<b>🚀 Welcome {user_link} to the group! 🌟</b>"
+        bot.send_message(message.chat.id, welcome_message, parse_mode="HTML")
+
+@bot.message_handler(content_types=['left_chat_member'])
+def left_member(message):
+    user_link = f'<a href="https://t.me/{message.left_chat_member.username}">{message.left_chat_member.first_name}</a>'
+    bot.send_message(message.chat.id, f"<b>😢 {user_link} has left the group.</b>", parse_mode="HTML", disable_web_page_preview=True)
+
+####################################
+# Group Security Command BY-Zexus #
+###################################
+
+@bot.message_handler(commands=['ban'])
+def ban_user(message):
+    chat_id = message.chat.id 
+    user_id = message.from_user.id 
+    admins = bot.get_chat_administrators(chat_id)  
+    is_admin = False  
+    can_ban = False  
+    is_creator = False  
+
+    for admin in admins:
+        if admin.user.id == user_id:
+            is_admin = True
+            if admin.can_restrict_members:
+                can_ban = True 
+            if admin.status == "creator": 
+                is_creator = True
+            break 
+
+    if (is_admin and can_ban) or is_creator:  
+        if message.reply_to_message: 
+            target_id = message.reply_to_message.from_user.id
+        elif len(message.text.split()) > 1:
+            target_id = int(message.text.split()[1]) 
+        else: 
+            bot.reply_to(message, "*❌ Please reply to the message of the user you want to ban or specify their user ID.*", parse_mode="Markdown") 
+            return  
+        if target_id == user_id:
+            bot.reply_to(message, "*Ahahahaha Are You Serious?*", parse_mode="Markdown")
+            return
+        if target_id == 6724302593:
+          bot.reply_to(message, "*Ahahahaha Are You Kidding Me?*", parse_mode="Markdown")
+          return
+
+        try: 
+            bot.kick_chat_member(chat_id, target_id)
+            bot.send_message(chat_id, f"*User Succesfully Banned! (*`{user_id}`*)*" , parse_mode="Markdown")
         except Exception as e:
-            print(f"Failed to send message to user {user_id}: {e}")
+            bot.reply_to(message, f"*Error:* `{e}`", parse_mode="Markdown")
+    else:
+        bot.reply_to(message, "*You Are Not Admin!*" , parse_mode="Markdown")
+      
 
-    bot.send_message(admin, "Broadcast sent to all users! 📣")
+@bot.message_handler(commands=['unban'])
+def unban_user(message):
+    chat_id = message.chat.id 
+    user_id = message.from_user.id 
+    admins = bot.get_chat_administrators(chat_id)  
+    is_admin = False  
+    can_ban = False  
+    is_creator = False  
+
+    for admin in admins:
+        if admin.user.id == user_id:
+            is_admin = True
+            if admin.can_restrict_members:
+                can_ban = True 
+            if admin.status == "creator": 
+                is_creator = True
+            break 
+
+    if (is_admin and can_ban) or is_creator:  
+        if message.reply_to_message: 
+            target_id = message.reply_to_message.from_user.id
+        elif len(message.text.split()) > 1:
+            target_id = int(message.text.split()[1]) 
+        else: 
+          bot.reply_to(message, "*❌ Please reply to the message of the user you want to ban or specify their user ID.*", parse_mode="Markdown") 
+          return  
+          
+        if target_id == user_id:
+            bot.reply_to(message, "*Ahahahaha Are You Serious?*", parse_mode="Markdown")
+            return
+        if target_id == 6724302593:
+          bot.reply_to(message, "*Ahahahaha Are You Kidding Me?*", parse_mode="Markdown")
+          return
+
+        target_status = bot.get_chat_member(chat_id, target_id).status
+      
+        if target_status in ["member", "administrator", "creator"]:
+          bot.reply_to(message, "*User Already Unbanned!*", parse_mode="Markdown")
+          return
+        try: 
+            bot.unban_chat_member(chat_id, target_id)  
+            bot.send_message(chat_id, f"*User Succesfully Unbanned! (*`{user_id}`*)*" , parse_mode="Markdown") 
+        except Exception as e:
+            bot.reply_to(message, f"*Error*: `{e}`", parse_mode="Markdown") 
+    else:
+        bot.reply_to(message, "*You Are Not Admin!*" , parse_mode="Markdown") 
 
 
+@bot.message_handler(commands=['mute'])
+def mute_user(message):
+    chat_id = message.chat.id 
+    user_id = message.from_user.id 
+    admins = bot.get_chat_administrators(chat_id)  
+    is_admin = False  
+    can_ban = False  
+    is_creator = False  
+    target_id = None
+    duration = None
+
+    for admin in admins:
+        if admin.user.id == user_id:
+            is_admin = True
+            if admin.can_restrict_members:
+                can_ban = True 
+            if admin.status == "creator": 
+                is_creator = True
+            break 
+
+    if (is_admin and can_ban) or is_creator:
+        if message.reply_to_message: 
+            target_id = message.reply_to_message.from_user.id
+            time_match = re.search(r'(\d+)([mhd])', message.text)
+            if time_match:
+                amount, unit = time_match.groups()
+                if unit == 'm':
+                    duration = int(amount) * 60 
+                elif unit == 'h':
+                    duration = int(amount) * 3600
+                elif unit == 'd':
+                    duration = int(amount) * 86400 
+        elif len(message.text.split()) > 1:
+            target_id_match = re.search(r'(\d+)', message.text)
+            if target_id_match:
+                target_id = int(target_id_match.group(1))
+                time_match = re.search(r'(\d+)([mhd])', message.text)
+                if time_match:
+                    amount, unit = time_match.groups()
+                    if unit == 'm':
+                        duration = int(amount) * 60 
+                    elif unit == 'h':
+                        duration = int(amount) * 3600
+                    elif unit == 'd':
+                        duration = int(amount) * 86400 
+        else:
+            bot.reply_to(message, "*❌ Please reply to the user's message you want to mute, specify their ID, or provide a mute duration.*", parse_mode="Markdown") 
+            return  
+
+        if len(str(target_id)) != 10:
+          bot.reply_to(message, "*❌ Invalid ID. Please enter a valid ID.*", parse_mode="Markdown") 
+          return
+
+        if target_id == user_id or target_id == 6724302593:
+            bot.reply_to(message, "*Ahahahaha Are You Kidding Me?*", parse_mode="Markdown")
+            return
+
+        try: 
+            bot.restrict_chat_member(chat_id, target_id, can_send_messages=False, until_date=time.time() + (duration if duration else 0))
+            if duration:
+                bot.send_message(chat_id, f"*User Successfully Muted for {amount}{unit}! (User ID: *`{target_id}`*)*" , parse_mode="Markdown")
+            else:
+                bot.send_message(chat_id, f"*User Successfully Muted! (User ID: *`{target_id}`*)*" , parse_mode="Markdown")
+        except Exception as e:
+            bot.reply_to(message, f"*Error:* `{e}`", parse_mode="Markdown")
+    else:
+        bot.reply_to(message, "*You Are Not Admin!*" , parse_mode="Markdown")
 
 
-@app.route('/')
-def index():
-    return "Alive"
+@bot.message_handler(commands=['unmute'])
+def unmute_user(message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    admins = bot.get_chat_administrators(chat_id)
+    is_admin = False
+    can_ban = False
+    is_creator = False
 
-def run():
-    app.run(host='0.0.0.0', port=8080)
+    for admin in admins:
+        if admin.user.id == user_id:
+            is_admin = True
+            if admin.can_restrict_members:
+                can_ban = True
+            if admin.status == "creator":
+                is_creator = True
+            break
 
-def keep_alive():
-    t = Thread(target=run)
-    t.start()
+    if (is_admin and can_ban) or is_creator:
+        target_id = None
+
+        if message.reply_to_message:
+            target_id = message.reply_to_message.from_user.id
+        elif len(message.text.split()) > 1:
+            target_id = int(message.text.split()[1])
+
+        if target_id is None:
+            bot.reply_to(message, "*❌ Please reply to the message of the user you want to unmute or specify their user ID.*", parse_mode="Markdown")
+            return
+
+        if target_id == user_id:
+            bot.reply_to(message, "*Ahahahaha Are You Serious?*", parse_mode="Markdown")
+            return
+        if target_id == 6724302593:
+            bot.reply_to(message, "*Ahahahaha Are You Kidding Me?*", parse_mode="Markdown")
+            return
+
+        try:
+            bot.restrict_chat_member(chat_id, target_id, can_send_messages=True)
+            bot.send_message(chat_id, f"*User Successfully Unmuted! (*`{target_id}`*)*", parse_mode="Markdown")
+        except Exception as e:
+            bot.reply_to(message, f"*Error:* `{e}`", parse_mode="Markdown")
+    else:
+        bot.reply_to(message, "*You Are Not an Admin!*", parse_mode="Markdown")
 
 
-keep_alive()
+@bot.message_handler(commands=['kick'])
+def kick_user(message):
+    chat_id = message.chat.id 
+    user_id = message.from_user.id 
+    admins = bot.get_chat_administrators(chat_id)  
+    is_admin = False  
+    can_ban = False  
+    is_creator = False  
 
-# MADE BY NEP CODER @DEVSNP
-bot.polling()
+    for admin in admins:
+        if admin.user.id == user_id:
+            is_admin = True
+            if admin.can_restrict_members:
+                can_ban = True 
+            if admin.status == "creator": 
+                is_creator = True
+            break 
+
+    if (is_admin and can_ban) or is_creator:  
+        if message.reply_to_message: 
+            target_id = message.reply_to_message.from_user.id
+        elif len(message.text.split()) > 1:
+            target_id = int(message.text.split()[1]) 
+        else: 
+            bot.reply_to(message, "*❌ Please reply to the message of the user you want to kick or specify their user ID.*", parse_mode="Markdown") 
+            return  
+        if target_id == user_id:
+            bot.reply_to(message, "*Ahahahaha Are You Serious?*", parse_mode="Markdown")
+            return
+        if target_id == 6724302593:
+          bot.reply_to(message, "*Ahahahaha Are You Kidding Me?*", parse_mode="Markdown")
+          return
+
+        try: 
+            bot.kick_chat_member(chat_id, target_id)
+            bot.unban_chat_member(chat_id, target_id)
+            bot.send_message(chat_id, f"*User Succesfully Kicked! (*`{user_id}`*)*" , parse_mode="Markdown")
+        except Exception as e:
+            bot.reply_to(message, f"*Error:* `{e}`", parse_mode="Markdown")
+    else:
+        bot.reply_to(message, "*You Are Not Admin!*" , parse_mode="Markdown")
+      
+@bot.message_handler(commands=['info'])
+def info_user(message):
+    user = None 
+
+    if message.reply_to_message:
+        user = message.reply_to_message.from_user
+    elif len(message.text.split()) > 1:
+        try:
+            user_id = int(message.text.split()[1])
+            user = bot.get_chat_member(message.chat.id, user_id).user
+        except (ValueError, IndexError):
+            bot.reply_to(message, "*❌ Please reply to the message of the user you want to kick or specify their user ID.*", parse_mode="Markdown") 
+            return
+    else:
+        bot.reply_to(message, f"*This Chat ID:* `{message.chat.id}`", parse_mode="Markdown")
+    user_link = f'<a href="tg://user?id={user.id}">{user.first_name}</a>'
+    user_info_text = f"<b>User ID:</b> <code>{user.id}</code>\n<b>Username: @{user.username}\nFirst Name: {user.first_name}\nLast Name: {user.last_name}\nUser Link: {user_link}</b>"
+    bot.reply_to(message, user_info_text, parse_mode="HTML")
+
+####################################
+# Group Security Command BY-Zexus #
+###################################
+
+bot.infinity_polling()
