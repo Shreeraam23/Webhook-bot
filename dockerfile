@@ -1,6 +1,9 @@
-FROM node:18
-     RUN apt-get update && apt-get install -y curl
-     COPY . .
-     RUN npm install
-     RUN chmod +x sethook.sh
-     CMD [ "npm", "start" ]
+FROM php:apache
+
+WORKDIR /var/www/html
+COPY web .
+
+ENV PORT=8000
+EXPOSE ${PORT}
+
+RUN sed -i 's/Listen 80/Listen ${PORT}/' /etc/apache2/ports.conf
