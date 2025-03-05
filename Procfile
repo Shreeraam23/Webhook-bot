@@ -1,1 +1,1 @@
-worker: python3 main.py
+web: npx serve -p $PORT
